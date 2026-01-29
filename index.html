@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>הקוביה - LEGO The Cube | משחק הלגו האולטימטיבי</title>
+    <meta name="description" content="הקוביה - משחק פעולה מרגש בעולם הלגו. הילחמו ביצורי לגו, פתחו נשקים חדשים והצילו את עולם הקוביות!">
+    <meta name="keywords" content="לגו, משחק, הקוביה, פעולה, משחקי דפדפן, LEGO, Game">
+    <meta property="og:title" content="הקוביה - LEGO The Cube">
+    <meta property="og:description" content="הילחמו ביצורי לגו בפיזיקה מציאותית!">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23ef4444%22/><circle cx=%2230%22 cy=%2230%22 r=%2210%22 fill=%22white%22 opacity=%220.5%22/><circle cx=%2270%22 cy=%2230%22 r=%2210%22 fill=%22white%22 opacity=%220.5%22/><circle cx=%2230%22 cy=%2270%22 r=%2210%22 fill=%22white%22 opacity=%220.5%22/><circle cx=%2270%22 cy=%2270%22 r=%2210%22 fill=%22white%22 opacity=%220.5%22/></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              lego: {
+                yellow: '#EAB308',
+                red: '#ef4444',
+                blue: '#3b82f6',
+                green: '#22c55e'
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+        /* AdSense Placeholder */
+        .adsbygoogle { display: block; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+        "react/": "https://esm.sh/react@^19.2.4/",
+        "react": "https://esm.sh/react@^19.2.4"
+      }
+    }
+    </script>
+    <!-- Google AdSense Placeholder -->
+    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div id="root"></div>
+</body>
+</html>
