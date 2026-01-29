@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Game from './components/Game';
 
@@ -34,7 +33,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center overflow-hidden transition-colors duration-300">
+    <div className="fixed inset-0 w-full h-full bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center overflow-hidden transition-colors duration-300">
       
       {/* Theme Toggle Button */}
       <button 
@@ -46,12 +45,12 @@ const App: React.FC = () => {
       </button>
 
       {/* AdSense Placeholder - Top Ad Unit */}
-      <div className="absolute top-0 w-full h-16 flex items-center justify-center opacity-10 pointer-events-none">
+      <div className="absolute top-0 w-full h-16 flex items-center justify-center opacity-10 pointer-events-none z-0">
         <div className="bg-slate-400 w-full max-w-4xl h-full flex items-center justify-center text-[10px]">AD UNIT</div>
       </div>
 
       {gameState === 'START' && (
-        <div className="z-10 p-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-3xl shadow-2xl text-center max-w-lg border-8 border-yellow-400">
+        <div className="z-10 p-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-3xl shadow-2xl text-center max-w-lg border-8 border-yellow-400 mx-4">
           <h1 className="text-6xl font-black mb-6 text-red-600 dark:text-red-500 drop-shadow-md">הקוביה</h1>
           <p className="text-xl mb-8 text-slate-700 dark:text-slate-300 leading-relaxed font-bold">
             יצורי לגו פלשו לעולם הקוביות! שרוד 30 שניות בכל שלב ושדרג את הנשקים שלך.
@@ -72,11 +71,13 @@ const App: React.FC = () => {
       )}
 
       {gameState === 'PLAYING' && (
-        <Game onGameOver={handleGameOver} />
+        <div className="w-full h-full">
+          <Game onGameOver={handleGameOver} />
+        </div>
       )}
 
       {gameState === 'GAMEOVER' && (
-        <div className="z-10 p-12 bg-white/95 dark:bg-slate-800/95 rounded-3xl shadow-2xl text-center max-w-md border-8 border-red-500 animate-in fade-in zoom-in duration-300">
+        <div className="z-10 p-12 bg-white/95 dark:bg-slate-800/95 rounded-3xl shadow-2xl text-center max-w-md border-8 border-red-500 animate-in fade-in zoom-in duration-300 mx-4">
           <h2 className="text-5xl font-black mb-2 text-red-600">הפסדת!</h2>
           <p className="text-3xl font-bold mb-6 text-slate-700 dark:text-slate-300">ניקוד סופי: {score}</p>
           
@@ -90,8 +91,8 @@ const App: React.FC = () => {
       )}
 
       {/* Footer */}
-      <footer className="absolute bottom-4 left-0 right-0 text-center text-slate-500 dark:text-slate-400 text-sm font-medium z-10 pointer-events-none">
-        <p dir="ltr">(C) Noam Gold AI 2026 | Send Feedback: <a href="mailto:goldnoamai@gmail.com" className="pointer-events-auto hover:text-red-500 transition-colors">goldnoamai@gmail.com</a></p>
+      <footer className="absolute bottom-4 left-0 right-0 text-center text-slate-500 dark:text-slate-400 text-xs md:text-sm font-medium z-10 pointer-events-none">
+        <p dir="ltr" className="px-4">(C) Noam Gold AI 2026 | Send Feedback: <a href="mailto:goldnoamai@gmail.com" className="pointer-events-auto hover:text-red-500 transition-colors">goldnoamai@gmail.com</a></p>
       </footer>
 
       {/* Background Decor */}

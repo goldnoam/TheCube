@@ -51,10 +51,10 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
 
   const playerRef = useRef<Player>({
     id: 'player',
-    pos: { x: 400, y: 300 },
+    pos: { x: window.innerWidth / 2, y: window.innerHeight - 200 },
     vel: { x: 0, y: 0 },
-    width: 40,
-    height: 60,
+    width: 45,
+    height: 65,
     color: '#EAB308',
     health: 100,
     shield: 100,
@@ -81,6 +81,17 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
   useEffect(() => {
     const saved = localStorage.getItem('lego_cube_highscores');
     if (saved) setHighScores(JSON.parse(saved));
+    
+    // Resize handler to keep canvas full size
+    const handleResize = () => {
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const saveScore = (finalScore: number) => {
@@ -235,6 +246,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    
     const handleKeyDown = (e: KeyboardEvent) => { 
         keysRef.current[e.key.toLowerCase()] = true; 
         if (e.key === 'p') setIsPaused(v => !v); 
@@ -292,6 +304,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
         else { p.vel.x *= 0.8; }
         if ((keysRef.current['arrowup'] || keysRef.current['w']) && !p.isJumping) { p.vel.y = JUMP_FORCE; p.isJumping = true; }
         p.vel.y += GRAVITY; p.pos.x += p.vel.x; p.pos.y += p.vel.y;
+        
         const groundY = canvas.height - 100;
         if (p.pos.y + p.height > groundY) { p.pos.y = groundY - p.height; p.vel.y = 0; p.isJumping = false; }
         if (p.pos.x < 0) p.pos.x = 0; if (p.pos.x + p.width > canvas.width) p.pos.x = canvas.width - p.width;
@@ -474,7 +487,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
          onPointerDown={() => isFiringRef.current = true} 
          onPointerUp={() => isFiringRef.current = false}
          onPointerMove={(e) => mousePosRef.current = { x: e.clientX, y: e.clientY }}>
-      <canvas ref={canvasRef} className="w-full h-full cursor-crosshair" />
+      <canvas ref={canvasRef} className="block w-full h-full cursor-crosshair" />
       
       {/* HUD Left */}
       <div className="absolute top-6 left-6 flex flex-col gap-2 w-72 pointer-events-none">
