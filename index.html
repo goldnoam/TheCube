@@ -28,8 +28,6 @@
             display: block;
             touch-action: none;
         }
-        /* AdSense Placeholder */
-        .adsbygoogle { display: block; }
     </style>
     <script type="importmap">
 {
@@ -43,8 +41,14 @@
   }
 }
 </script>
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0274741291001288" crossorigin="anonymous"></script>
+    <script>
+        // Pre-initialize adsbygoogle to avoid "undefined" errors
+        window.adsbygoogle = window.adsbygoogle || [];
+    </script>
+    <!-- Google AdSense - Handled with onerror to manage ad-blocking -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0274741291001288" 
+            crossorigin="anonymous"
+            onerror="console.warn('AdSense script blocked by client.')"></script>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
     <div id="root"></div>

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import Game from './components/Game';
 
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+  }
+}
+
 const App: React.FC = () => {
-  // Set theme to dark by default as requested
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [score, setScore] = useState(0);
   const [darkMode, setDarkMode] = useState(true);
+  const [adsBlocked, setAdsBlocked] = useState(false);
 
   useEffect(() => {
     if (darkMode) {
@@ -20,6 +26,22 @@ const App: React.FC = () => {
     if (metaDesc) {
       metaDesc.setAttribute("content", "הקוביה: משחק פעולה של פירוק לגו. הילחמו ביצורי לגו בעזרת רובי קוביות, פצצות ולייזרים.");
     }
+
+    // Detect if AdSense script was blocked
+    const checkAds = () => {
+      // If the script is blocked, window.adsbygoogle.loaded will usually be undefined
+      // and the script tag itself might be missing or failed to execute.
+      if (!window.adsbygoogle || !(window.adsbygoogle as any).loaded) {
+        // We check if it's still just the empty array we initialized in index.html
+        if (window.adsbygoogle && window.adsbygoogle.length === 0) {
+          setAdsBlocked(true);
+        }
+      }
+    };
+    
+    // Check after a short delay to allow the script to load
+    const timer = setTimeout(checkAds, 2000);
+    return () => clearTimeout(timer);
   }, [darkMode]);
 
   const startGame = () => {
@@ -44,13 +66,22 @@ const App: React.FC = () => {
         {darkMode ? '☀️' : '🌙'}
       </button>
 
-      {/* AdSense Placeholder - Top Ad Unit */}
-      <div className="absolute top-0 w-full h-16 flex items-center justify-center opacity-10 pointer-events-none z-0">
-        <div className="bg-slate-400 w-full max-w-4xl h-full flex items-center justify-center text-[10px]">AD UNIT</div>
-      </div>
+      {/* AdSense Placeholder - Top Ad Unit (Hidden if blocked) */}
+      {!adsBlocked && (
+        <div className="absolute top-0 w-full h-16 flex items-center justify-center opacity-10 pointer-events-none z-0">
+          <ins className="adsbygoogle bg-slate-400 w-full max-w-4xl h-full flex items-center justify-center text-[10px]"
+               style={{ display: 'block' }}
+               data-ad-client="ca-pub-0274741291001288"
+               data-ad-slot="7289012345"
+               data-ad-format="auto"
+               data-full-width-responsive="true">
+            AD UNIT
+          </ins>
+        </div>
+      )}
 
       {gameState === 'START' && (
-        <div className="z-10 p-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-3xl shadow-2xl text-center max-w-lg border-8 border-yellow-400 mx-4">
+        <div className="z-10 p-10 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-3xl shadow-2xl text-center max-w-lg border-8 border-yellow-400 mx-4 scale-in">
           <h1 className="text-6xl font-black mb-6 text-red-600 dark:text-red-500 drop-shadow-md">הקוביה</h1>
           <p className="text-xl mb-8 text-slate-700 dark:text-slate-300 leading-relaxed font-bold">
             יצורי לגו פלשו לעולם הקוביות! שרוד 30 שניות בכל שלב ושדרג את הנשקים שלך.
