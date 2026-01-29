@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { WeaponType, Vector, Player, Enemy, Projectile, Particle, Upgrades, WeaponStats, PowerUp, PowerUpType, HighScore } from '../types';
 
@@ -93,7 +92,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
   };
 
   const resetGame = useCallback(() => {
-    window.location.reload(); // Quick reset for the entire state
+    window.location.reload(); 
   }, []);
 
   const playSwitchSound = useCallback((type: WeaponType) => {
@@ -341,7 +340,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
             }
           } else {
             enemiesRef.current.forEach(enemy => {
-              if (proj.pos.x < enemy.pos.x + enemy.width && proj.pos.x + proj.width > enemy.pos.x && proj.pos.y < enemy.pos.y + enemy.height && proj.pos.y + p.height > enemy.pos.y) {
+              if (proj.pos.x < enemy.pos.x + enemy.width && proj.pos.x + proj.width > enemy.pos.x && proj.pos.y < enemy.pos.y + enemy.height && proj.pos.y + proj.height > enemy.pos.y) {
                 enemy.health -= proj.damage; 
                 if (!proj.piercing) {
                     if (proj.bounces && proj.bounces > 0) {
@@ -407,7 +406,6 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
           if (pr.type === WeaponType.PLASMA_CUBE) {
               const pulse = 1 + Math.sin(Date.now()*0.01)*0.1;
               ctx.save(); ctx.translate(pr.pos.x + pr.width/2, pr.pos.y + pr.height/2); ctx.scale(pulse, pulse); ctx.fillStyle = pr.color; ctx.fillRect(-pr.width/2, -pr.height/2, pr.width, pr.height); ctx.restore();
-          /* FIXED: replaced undefined variable 'proj' with 'pr' */
           } else { ctx.fillStyle = pr.color; ctx.fillRect(pr.pos.x, pr.pos.y, pr.width, pr.height); }
       });
       powerUpsRef.current.forEach(pu => { ctx.fillStyle = pu.color; ctx.save(); ctx.translate(pu.pos.x + pu.width/2, pu.pos.y + pu.height/2); ctx.rotate(Date.now()*0.005); ctx.fillRect(-pu.width/2, -pu.height/2, pu.width, pu.height); ctx.restore(); });
