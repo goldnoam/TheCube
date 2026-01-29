@@ -15,13 +15,13 @@ const LEVEL_DURATION = 30;
 const RAY_ENERGY_BASE_COST = 2.5;
 
 const INITIAL_WEAPON_STATS: Record<WeaponType, WeaponStats> = {
-  [WeaponType.BRICK_GUN]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 15 }, // special = speed
-  [WeaponType.BOMB]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 120 }, // special = radius
-  [WeaponType.RAY]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 10 },  // special = beam width
-  [WeaponType.SHOTGUN]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 5 },  // special = pellets
-  [WeaponType.LEGO_LAUNCHER]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 3 }, // special = bounces
-  [WeaponType.MINIGUN]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 0.2 }, // special = scatter (lower is better)
-  [WeaponType.PLASMA_CUBE]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 40 }, // special = size
+  [WeaponType.BRICK_GUN]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 15 },
+  [WeaponType.BOMB]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 120 },
+  [WeaponType.RAY]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 10 },
+  [WeaponType.SHOTGUN]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 5 },
+  [WeaponType.LEGO_LAUNCHER]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 3 },
+  [WeaponType.MINIGUN]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 0.2 },
+  [WeaponType.PLASMA_CUBE]: { level: 1, damageBonus: 1, fireRateBonus: 1, specialValue: 40 },
 };
 
 const Game: React.FC<GameProps> = ({ onGameOver }) => {
@@ -92,6 +92,10 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
     localStorage.setItem('lego_cube_highscores', JSON.stringify(newScores));
   };
 
+  const resetGame = useCallback(() => {
+    window.location.reload(); // Quick reset for the entire state
+  }, []);
+
   const playSwitchSound = useCallback((type: WeaponType) => {
     if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
     const ctx = audioCtxRef.current;
@@ -155,7 +159,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
         id: Math.random().toString(), pos, vel: { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, 
         width: 15, height: 10, color: fromEnemy ? '#ef4444' : '#DC2626', type: weapon, 
         damage, life: 100, fromEnemy, 
-        bounces: !fromEnemy && wStats.level >= 5 ? 1 : 0 // Bonus bounce for high level brick gun
+        bounces: !fromEnemy && wStats.level >= 5 ? 1 : 0
       });
     } else if (weapon === WeaponType.BOMB) {
       projectilesRef.current.push({ id: Math.random().toString(), pos, vel: { x: Math.cos(angle) * 10, y: Math.sin(angle) * 10 - 5 }, width: 20, height: 20, color: '#1E293B', type: weapon, damage: damage * 4, life: 120 });
@@ -248,30 +252,23 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
     const loop = () => {
       if (!isPaused && !isShopOpen) {
         const p = playerRef.current;
-        // Shield Regen
         if (Date.now() - lastDamageTimeRef.current > 3000) {
           p.shield = Math.min(p.upgrades.shieldMax, p.shield + p.upgrades.shieldRegenRate);
           setShield((p.shield / p.upgrades.shieldMax) * 100);
         }
-        // Energy Regen
         const currentWStats = p.upgrades.weapons[weapon];
         const rayEfficiency = weapon === WeaponType.RAY ? (currentWStats.level * 0.1) : 0;
         p.energy = Math.min(p.upgrades.energyMax, p.energy + (p.activePowerUp === PowerUpType.INFINITE_ENERGY ? 5 : ENERGY_REGEN_RATE + rayEfficiency));
         setEnergy((p.energy / p.upgrades.energyMax) * 100);
         
-        // PowerUp decay
         if (p.powerUpTimer > 0) { p.powerUpTimer--; if (p.powerUpTimer <= 0) p.activePowerUp = null; }
-        // Decay shake
         if (shakeRef.current > 0) { shakeRef.current *= 0.9; if (shakeRef.current < 0.1) shakeRef.current = 0; }
 
-        // Continuous Fire for weapons like Minigun/Ray
         if (keysRef.current[' '] || isFiringRef.current) {
             if (weapon === WeaponType.RAY) {
                 const cost = RAY_ENERGY_BASE_COST - (currentWStats.level * 0.15);
                 if (p.energy >= cost) {
                     p.energy -= cost;
-                    // Ray logic handled in DRAW phase for collision simplicity or here?
-                    // Let's do a simple ray check here
                     const angle = mousePosRef.current.x !== 0 ? Math.atan2(mousePosRef.current.y - (p.pos.y + p.height / 2), mousePosRef.current.x - (p.pos.x + p.width / 2)) : (p.facingRight ? 0 : Math.PI);
                     enemiesRef.current.forEach(enemy => {
                         const ex = enemy.pos.x + enemy.width / 2;
@@ -290,7 +287,6 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
             }
         }
 
-        // Movement
         const moveSpeed = PLAYER_SPEED_BASE * p.upgrades.speedMult;
         if (keysRef.current['arrowleft'] || keysRef.current['a']) { p.vel.x = -moveSpeed; p.facingRight = false; }
         else if (keysRef.current['arrowright'] || keysRef.current['d']) { p.vel.x = moveSpeed; p.facingRight = true; }
@@ -301,7 +297,6 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
         if (p.pos.y + p.height > groundY) { p.pos.y = groundY - p.height; p.vel.y = 0; p.isJumping = false; }
         if (p.pos.x < 0) p.pos.x = 0; if (p.pos.x + p.width > canvas.width) p.pos.x = canvas.width - p.width;
 
-        // Enemies
         if (timeLeft > 0 && Math.random() < ENEMY_SPAWN_RATE_BASE + (level * 0.005)) {
           const side = Math.random() > 0.5;
           const x = side ? -80 : canvas.width + 80;
@@ -328,29 +323,25 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
           }
         });
 
-        // Projectiles
         projectilesRef.current.forEach((proj, pIdx) => {
           proj.pos.x += proj.vel.x; proj.pos.y += proj.vel.y; proj.life--;
-          
           if (proj.type === WeaponType.BOMB && (proj.life <= 0 || proj.pos.y + proj.height > groundY)) {
               explodeAt(proj.pos.x, proj.pos.y, p.upgrades.weapons[WeaponType.BOMB].specialValue);
               projectilesRef.current.splice(pIdx, 1);
               return;
           }
-
           if (proj.bounces && proj.bounces > 0 && proj.pos.y + proj.height > groundY) {
               proj.vel.y *= -0.7;
               proj.pos.y = groundY - proj.height;
               proj.bounces--;
           }
-
           if (proj.fromEnemy) {
             if (proj.pos.x < p.pos.x + p.width && proj.pos.x + proj.width > p.pos.x && proj.pos.y < p.pos.y + p.height && proj.pos.y + proj.height > p.pos.y) {
               handlePlayerDamage(proj.damage); projectilesRef.current.splice(pIdx, 1);
             }
           } else {
             enemiesRef.current.forEach(enemy => {
-              if (proj.pos.x < enemy.pos.x + enemy.width && proj.pos.x + proj.width > enemy.pos.x && proj.pos.y < enemy.pos.y + enemy.height && proj.pos.y + proj.height > enemy.pos.y) {
+              if (proj.pos.x < enemy.pos.x + enemy.width && proj.pos.x + proj.width > enemy.pos.x && proj.pos.y < enemy.pos.y + enemy.height && proj.pos.y + p.height > enemy.pos.y) {
                 enemy.health -= proj.damage; 
                 if (!proj.piercing) {
                     if (proj.bounces && proj.bounces > 0) {
@@ -366,7 +357,6 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
           if (proj.life <= 0) projectilesRef.current.splice(pIdx, 1);
         });
 
-        // PowerUps
         powerUpsRef.current.forEach((pup, puIdx) => {
           pup.life--;
           if (p.pos.x < pup.pos.x + pup.width && p.pos.x + p.width > pup.pos.x && p.pos.y < pup.pos.y + pup.height && p.pos.y + p.height > pup.pos.y) {
@@ -377,22 +367,17 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
           }
           if (pup.life <= 0) powerUpsRef.current.splice(puIdx, 1);
         });
-
-        // Particles
         particlesRef.current.forEach((part, paIdx) => { part.pos.x += part.vel.x; part.pos.y += part.vel.y; part.life--; if (part.life <= 0) particlesRef.current.splice(paIdx, 1); });
       }
 
-      // DRAW
       ctx.clearRect(0,0,canvas.width, canvas.height);
       ctx.save();
       if (shakeRef.current > 0) ctx.translate((Math.random()-0.5)*shakeRef.current, (Math.random()-0.5)*shakeRef.current);
-      
       const p = playerRef.current;
       const groundY = canvas.height - 100;
       ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,canvas.width, canvas.height);
       ctx.fillStyle = '#166534'; ctx.fillRect(0, groundY, canvas.width, 100);
 
-      // Boss UI
       const boss = enemiesRef.current.find(e => e.type === 'boss');
       if (boss) {
         ctx.fillStyle = '#334155'; ctx.fillRect(canvas.width/2 - 200, 20, 400, 20);
@@ -400,7 +385,6 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
         ctx.fillStyle = 'white'; ctx.font = '20px Heebo'; ctx.textAlign = 'center'; ctx.fillText(`BOSS LEVEL ${level/5}`, canvas.width/2, 60);
       }
 
-      // Ray visual
       if (weapon === WeaponType.RAY && (keysRef.current[' '] || isFiringRef.current) && p.energy > 0) {
           const wStats = p.upgrades.weapons[WeaponType.RAY];
           const angle = mousePosRef.current.x !== 0 ? Math.atan2(mousePosRef.current.y - (p.pos.y + p.height / 2), mousePosRef.current.x - (p.pos.x + p.width / 2)) : (p.facingRight ? 0 : Math.PI);
@@ -411,36 +395,23 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
           ctx.stroke();
       }
 
-      // Player
       if (p.shield > 0) {
         ctx.beginPath(); ctx.arc(p.pos.x + p.width/2, p.pos.y + p.height/2, 50, 0, Math.PI*2);
         ctx.strokeStyle = `rgba(59, 130, 246, ${0.2 + (Math.sin(Date.now()*0.01)+1)*0.2})`;
         ctx.lineWidth = 5; ctx.stroke();
       }
       ctx.fillStyle = p.color; ctx.fillRect(p.pos.x, p.pos.y, p.width, p.height);
-      if (p.activePowerUp) {
-        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.strokeRect(p.pos.x-5, p.pos.y-5, p.width+10, p.height+10);
-      }
-
+      if (p.activePowerUp) { ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.strokeRect(p.pos.x-5, p.pos.y-5, p.width+10, p.height+10); }
       enemiesRef.current.forEach(e => { ctx.fillStyle = e.color; ctx.fillRect(e.pos.x, e.pos.y, e.width, e.height); });
       projectilesRef.current.forEach(pr => { 
           if (pr.type === WeaponType.PLASMA_CUBE) {
               const pulse = 1 + Math.sin(Date.now()*0.01)*0.1;
-              ctx.save();
-              ctx.translate(pr.pos.x + pr.width/2, pr.pos.y + pr.height/2);
-              ctx.scale(pulse, pulse);
-              ctx.fillStyle = pr.color; ctx.fillRect(-pr.width/2, -pr.height/2, pr.width, pr.height);
-              ctx.restore();
-          } else {
-              ctx.fillStyle = pr.color; ctx.fillRect(pr.pos.x, pr.pos.y, pr.width, pr.height); 
-          }
+              ctx.save(); ctx.translate(pr.pos.x + pr.width/2, pr.pos.y + pr.height/2); ctx.scale(pulse, pulse); ctx.fillStyle = pr.color; ctx.fillRect(-pr.width/2, -pr.height/2, pr.width, pr.height); ctx.restore();
+          /* FIXED: replaced undefined variable 'proj' with 'pr' */
+          } else { ctx.fillStyle = pr.color; ctx.fillRect(pr.pos.x, pr.pos.y, pr.width, pr.height); }
       });
-      powerUpsRef.current.forEach(pu => { 
-        ctx.fillStyle = pu.color; 
-        ctx.save(); ctx.translate(pu.pos.x + pu.width/2, pu.pos.y + pu.height/2); ctx.rotate(Date.now()*0.005); ctx.fillRect(-pu.width/2, -pu.height/2, pu.width, pu.height); ctx.restore();
-      });
+      powerUpsRef.current.forEach(pu => { ctx.fillStyle = pu.color; ctx.save(); ctx.translate(pu.pos.x + pu.width/2, pu.pos.y + pu.height/2); ctx.rotate(Date.now()*0.005); ctx.fillRect(-pu.width/2, -pu.height/2, pu.width, pu.height); ctx.restore(); });
       particlesRef.current.forEach(pa => { ctx.fillStyle = pa.color; ctx.globalAlpha = pa.life/pa.maxLife; ctx.fillRect(pa.pos.x, pa.pos.y, pa.width, pa.height); ctx.globalAlpha = 1; });
-
       ctx.restore();
       frameId = requestAnimationFrame(loop);
     };
@@ -456,9 +427,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
           if (level % 5 === 0) {
             if (enemiesRef.current.find(e => e.type === 'boss')) return 0;
             spawnBoss();
-          } else {
-            setIsShopOpen(true);
-          }
+          } else { setIsShopOpen(true); }
           return 0;
         }
         return t - 1;
@@ -486,18 +455,14 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
       setUpgrades(prev => {
           const next = { ...prev };
           const w = next.weapons[wType];
-          w.level += 1;
-          w.damageBonus += 0.3;
-          w.fireRateBonus += 0.15;
-          // Specific special value improvements
+          w.level += 1; w.damageBonus += 0.3; w.fireRateBonus += 0.15;
           if (wType === WeaponType.BRICK_GUN) w.specialValue += 3;
           if (wType === WeaponType.BOMB) w.specialValue += 20;
           if (wType === WeaponType.RAY) w.specialValue += 4;
           if (wType === WeaponType.SHOTGUN) w.specialValue += 1;
           if (wType === WeaponType.LEGO_LAUNCHER) w.specialValue += 1;
-          if (wType === WeaponType.MINIGUN) w.specialValue *= 0.8; // Lower scatter
+          if (wType === WeaponType.MINIGUN) w.specialValue *= 0.8;
           if (wType === WeaponType.PLASMA_CUBE) w.specialValue += 8;
-          
           playerRef.current.upgrades = next;
           return next;
       });
@@ -536,6 +501,26 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
           <h4 className="font-black text-yellow-400 mb-1 underline text-sm">שיאי עולם</h4>
           {highScores.map((hs, i) => <div key={i} className="text-[10px] flex justify-between border-b border-white/10 py-1"><span>{hs.score}</span><span className="opacity-50">{hs.date}</span></div>)}
         </div>
+        <div className="flex gap-2 pointer-events-auto">
+          <button onClick={() => setIsPaused(!isPaused)} className="p-2 bg-white/90 rounded-lg shadow border border-slate-300 font-bold text-slate-800 hover:bg-slate-100 transition-colors text-xs">
+            {isPaused ? 'המשך' : 'השהה'}
+          </button>
+          <button onClick={resetGame} className="p-2 bg-red-100 rounded-lg shadow border border-red-300 font-bold text-red-800 hover:bg-red-200 transition-colors text-xs">
+            איפוס
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile WASD Controls */}
+      <div className="absolute bottom-24 right-8 flex flex-col gap-2 items-center pointer-events-auto md:hidden">
+        <div className="flex justify-center">
+          <MobileBtn label="W" onDown={() => keysRef.current['w'] = true} onUp={() => keysRef.current['w'] = false} />
+        </div>
+        <div className="flex gap-2">
+          <MobileBtn label="A" onDown={() => keysRef.current['a'] = true} onUp={() => keysRef.current['a'] = false} />
+          <MobileBtn label="S" onDown={() => keysRef.current['s'] = true} onUp={() => keysRef.current['s'] = false} />
+          <MobileBtn label="D" onDown={() => keysRef.current['d'] = true} onUp={() => keysRef.current['d'] = false} />
+        </div>
       </div>
 
       {/* Weapon Selector */}
@@ -552,7 +537,7 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
       {isShopOpen && (
         <div className="absolute inset-0 bg-slate-950/90 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 md:p-8 rounded-3xl border-8 border-yellow-400 max-w-2xl w-full text-center shadow-2xl overflow-y-auto max-h-[90vh]">
-            <h2 className="text-3xl md:text-4xl font-black text-red-600 mb-4">חנות שלב {level}</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-red-600 mb-4 text-center">חנות שלב {level}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-3">
                 <h3 className="font-black text-blue-600 text-lg underline">שדרוגים כלליים</h3>
@@ -584,5 +569,17 @@ const Game: React.FC<GameProps> = ({ onGameOver }) => {
     </div>
   );
 };
+
+const MobileBtn = ({ label, onDown, onUp }: any) => (
+  <button 
+    className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl border-2 border-white/40 text-white font-black text-2xl active:bg-white/40 active:scale-90 transition-all select-none touch-none flex items-center justify-center shadow-lg" 
+    onPointerDown={onDown} 
+    onPointerUp={onUp} 
+    onPointerLeave={onUp}
+    onContextMenu={(e) => e.preventDefault()}
+  >
+    {label}
+  </button>
+);
 
 export default Game;
