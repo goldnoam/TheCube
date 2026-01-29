@@ -9,6 +9,13 @@ export enum WeaponType {
   PLASMA_CUBE = 'PLASMA_CUBE'
 }
 
+export enum PowerUpType {
+  HEAL = 'HEAL',
+  DOUBLE_DAMAGE = 'DOUBLE_DAMAGE',
+  SHIELD_REFILL = 'SHIELD_REFILL',
+  INFINITE_ENERGY = 'INFINITE_ENERGY'
+}
+
 export interface Vector {
   x: number;
   y: number;
@@ -27,7 +34,7 @@ export interface WeaponStats {
   level: number;
   damageBonus: number;
   fireRateBonus: number;
-  specialValue: number; // e.g., bounces, radius, pellet count
+  specialValue: number; 
 }
 
 export interface Upgrades {
@@ -36,22 +43,30 @@ export interface Upgrades {
   energyMax: number;
   healthMax: number;
   speedMult: number;
+  shieldMax: number;
+  shieldRegenRate: number;
   weapons: Record<WeaponType, WeaponStats>;
 }
 
 export interface Player extends GameObject {
   health: number;
+  shield: number;
   weapon: WeaponType;
   isJumping: boolean;
   facingRight: boolean;
   energy: number;
   upgrades: Upgrades;
+  powerUpTimer: number;
+  activePowerUp: PowerUpType | null;
 }
 
 export interface Enemy extends GameObject {
   health: number;
-  type: 'crawler' | 'giant' | 'fast_runner' | 'tank';
+  maxHealth: number;
+  type: 'crawler' | 'giant' | 'fast_runner' | 'tank' | 'boss';
   isDebris?: boolean;
+  bossPattern?: number;
+  attackTimer?: number;
 }
 
 export interface Projectile extends GameObject {
@@ -60,6 +75,12 @@ export interface Projectile extends GameObject {
   life: number;
   bounces?: number;
   piercing?: boolean;
+  fromEnemy?: boolean;
+}
+
+export interface PowerUp extends GameObject {
+  type: PowerUpType;
+  life: number;
 }
 
 export interface Particle extends GameObject {
@@ -67,4 +88,9 @@ export interface Particle extends GameObject {
   maxLife: number;
   rotation: number;
   rotationVel: number;
+}
+
+export interface HighScore {
+  score: number;
+  date: string;
 }
